@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const userRoute = require('./routes/users');
 const authRoute = require('./routes/auth');
-
+const postRoute = require('./routes/posts');
 dotenv.config();
 const app = express();
 
@@ -24,7 +24,7 @@ const connectDB = async () => {
 connectDB();
 
 app.get('/', (req, res) => {
-  res.send('Welcome to the backend!!');
+  res.send('Welcome to the backend!');
 }
 );
 app.get('/users', (req, res) => {
@@ -39,8 +39,8 @@ app.use(morgan('common'));
 
 app.use('/api/users', userRoute);
 app.use('/api/auth', authRoute);
-
+app.use('/api/posts', postRoute);
 // Start the server
 app.listen(8800, () => {
-  console.log('Backend server is running!');
+  console.log('Backend server is running!!');
 });
