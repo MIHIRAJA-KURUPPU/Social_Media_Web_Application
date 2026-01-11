@@ -8,6 +8,11 @@ const authRoute = require('./routes/auth');
 const postRoute = require('./routes/posts');
 dotenv.config();
 const app = express();
+const cors = require('cors');
+
+
+// Enable CORS for all routes
+app.use(cors());
 
 // Connect to MongoDB using async/await
 const connectDB = async () => {
