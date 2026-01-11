@@ -7,6 +7,10 @@ const cors = require('cors');
 const userRoute = require('./routes/users');
 const authRoute = require('./routes/auth');
 const postRoute = require('./routes/posts');
+const commentRoute = require('./routes/comments');
+const notificationRoute = require('./routes/notifications');
+const uploadRoute = require('./routes/upload');
+const searchRoute = require('./routes/search');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 const { logger, requestLogger } = require('./utils/logger');
 const { apiLimiter } = require('./middleware/rateLimiter');
@@ -18,6 +22,9 @@ const app = express();
 app.use(express.json());
 app.use(helmet());
 app.use(cors());
+
+// Serve static files for uploads
+app.use('/uploads', express.static('uploads'));
 
 // Logging middleware
 if (process.env.NODE_ENV === 'production') {
@@ -52,6 +59,10 @@ app.get('/', (req, res) => {
     message: 'Welcome to Echo-Me API',
     version: '1.0.0',
     endpoints: {
+      comments: '/api/comments',
+      notifications: '/api/notifications',
+      upload: '/api/upload',
+      search: '/api/search',
       auth: '/api/auth',
       users: '/api/users',
       posts: '/api/posts',
@@ -78,6 +89,12 @@ app.get('/api/health', (req, res) => {
     res.status(503).json(healthcheck);
   }
 });
+
+// API Routes
+app.use('/api/comments', commentRoute);
+app.use('/api/notifications', notificationRoute);
+app.use('/api/upload', uploadRoute);
+app.use('/api/search', searchRoute);
 
 // API Routes
 app.use('/api/users', userRoute);

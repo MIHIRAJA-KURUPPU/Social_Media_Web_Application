@@ -10,6 +10,7 @@ const {
   followValidation
 } = require('../validators/userValidators');
 const { logger } = require('../utils/logger');
+const { notifyFollow } = require('../utils/notificationService');
 
 // Update user
 router.put('/:id',
@@ -170,6 +171,9 @@ router.put("/:id/follow",
     await user.updateOne({ $push: { followers: req.body.userId } });
     // Add target user to the current user's followings
     await currentUser.updateOne({ $push: { followings: req.params.id } });
+
+    // Create notification for followed user
+    await notifyFollow(req.params.id, req.body.userId);
 
     logger.logInfo('User followed', { followerId: req.body.userId, followedId: req.params.id });
 

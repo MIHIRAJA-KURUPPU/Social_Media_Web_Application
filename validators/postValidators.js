@@ -13,8 +13,8 @@ const createPostValidation = [
   body('img')
     .optional()
     .trim()
-    .isURL()
-    .withMessage('Image must be a valid URL'),
+    .isString()
+    .withMessage('Image must be a valid path or URL'),
   
   body('userId')
     .notEmpty()
@@ -40,8 +40,8 @@ const updatePostValidation = [
   body('img')
     .optional()
     .trim()
-    .isURL()
-    .withMessage('Image must be a valid URL'),
+    .isString()
+    .withMessage('Image must be a valid path or URL'),
   
   body('userId')
     .notEmpty()

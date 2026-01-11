@@ -1,3 +1,9 @@
 {"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 17:01:39"}
 {"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 17:01:39"}
 {"level":"info","message":"New user registered","timestamp":"2026-01-11 17:04:52","userId":"69638adc92e3c5840f1bb93d","username":"mihi1234"}
+{"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 20:45:54"}
+{"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 20:45:54"}
+{"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 20:52:48"}
+{"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 20:52:49"}
+{"level":"info","message":"Post created","postId":"6963c11b0d286ebbcb3e67e0","timestamp":"2026-01-11 20:56:19","userId":"69638adc92e3c5840f1bb93d"}
+{"level":"info","message":"Post created","postId":"6963c5040d286ebbcb3e6821","timestamp":"2026-01-11 21:13:00","userId":"69638adc92e3c5840f1bb93d"}

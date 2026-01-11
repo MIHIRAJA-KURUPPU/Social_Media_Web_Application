@@ -12,6 +12,7 @@ const {
 } = require("../validators/postValidators");
 const { postLimiter } = require("../middleware/rateLimiter");
 const { logger } = require("../utils/logger");
+const { notifyPostLike } = require("../utils/notificationService");
 
 //create a post
 router.post("/",
@@ -132,6 +133,10 @@ router.put("/:id/like",
     
     if (!post.likes.includes(req.body.userId)) {
       await post.updateOne({ $push: { likes: req.body.userId } });
+      
+      // Create notification for post owner
+      await notifyPostLike(post.userId, req.body.userId, post._id);
+      
       res.status(200).json({
         success: true,
         message: "The post has been liked"
