@@ -191,9 +191,25 @@ router.get("/timeline/:userId",
       })
     );
     
-    res.status(200).json(userPosts.concat(...friendPosts).sort((a, b) => {
+    const allPosts = userPosts.concat(...friendPosts).sort((a, b) => {
       return new Date(b.createdAt) - new Date(a.createdAt);
-    }));
+    });
+    
+    // Populate user data for each post
+    const postsWithUsers = await Promise.all(
+      allPosts.map(async (post) => {
+        const user = await User.findById(post.userId).select('username profilePicture');
+        return {
+          ...post.toObject(),
+          user: user ? {
+            username: user.username,
+            profilePicture: user.profilePicture
+          } : null
+        };
+      })
+    );
+    
+    res.status(200).json(postsWithUsers);
   })
 );
 
@@ -211,9 +227,18 @@ router.get("/profile/:username",
     
     const posts = await Post.find({ userId: user._id }).sort({ createdAt: -1 });
     
+    // Populate user data for each post
+    const postsWithUsers = posts.map(post => ({
+      ...post.toObject(),
+      user: {
+        username: user.username,
+        profilePicture: user.profilePicture
+      }
+    }));
+    
     res.status(200).json({
       success: true,
-      posts
+      posts: postsWithUsers
     });
   })
 );

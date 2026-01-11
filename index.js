@@ -20,7 +20,10 @@ const app = express();
 
 // Middleware - MUST be before routes
 app.use(express.json());
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false
+}));
 app.use(cors());
 
 // Serve static files for uploads
