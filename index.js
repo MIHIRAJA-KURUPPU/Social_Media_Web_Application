@@ -10,8 +10,10 @@ dotenv.config();
 const app = express();
 const cors = require('cors');
 
-
-// Enable CORS for all routes
+// Middleware - MUST be before routes
+app.use(express.json());
+app.use(helmet());
+app.use(morgan('common'));
 app.use(cors());
 
 // Connect to MongoDB using async/await
@@ -34,18 +36,15 @@ app.get('/', (req, res) => {
 );
 app.get('/users', (req, res) => {
   res.send('Welcome user!');
-}
-);
+});
 
-// Middleware
-app.use(express.json());
-app.use(helmet());
-app.use(morgan('common'));
-
+// API Routes
 app.use('/api/users', userRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/posts', postRoute);
+
 // Start the server
-app.listen(8800, () => {
-  console.log('Backend server is running!!');
+const PORT = process.env.PORT || 8800;
+app.listen(PORT, () => {
+  console.log(`Backend server is running on port ${PORT}`);
 });
