@@ -34,6 +34,23 @@ app.get('/', (req, res) => {
   res.send('Welcome to the backend!');
 }
 );
+
+// Health check endpoint for Docker
+app.get('/api/health', (req, res) => {
+  const healthcheck = {
+    uptime: process.uptime(),
+    message: 'OK',
+    timestamp: Date.now(),
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  };
+  try {
+    res.status(200).json(healthcheck);
+  } catch (error) {
+    healthcheck.message = error;
+    res.status(503).json(healthcheck);
+  }
+});
+
 app.get('/users', (req, res) => {
   res.send('Welcome user!');
 });
