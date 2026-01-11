@@ -7,6 +7,10 @@ const cors = require('cors');
 const userRoute = require('./routes/users');
 const authRoute = require('./routes/auth');
 const postRoute = require('./routes/posts');
+const commentRoute = require('./routes/comments');
+const uploadRoute = require('./routes/uploads');
+const notificationRoute = require('./routes/notifications');
+const searchRoute = require('./routes/search');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 const { logger, requestLogger } = require('./utils/logger');
 const { apiLimiter } = require('./middleware/rateLimiter');
@@ -83,6 +87,13 @@ app.get('/api/health', (req, res) => {
 app.use('/api/users', userRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/posts', postRoute);
+app.use('/api/comments', commentRoute);
+app.use('/api/uploads', uploadRoute);
+app.use('/api/notifications', notificationRoute);
+app.use('/api/search', searchRoute);
+
+// Serve uploaded static files
+app.use('/public', express.static('public'));
 
 // 404 handler - must be after all routes
 app.use(notFound);

@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const Post = require("../Models/Post");
 const User = require("../Models/User");
+const Comment = require('../Models/Comment');
 const { verifyToken } = require("../middleware/auth");
 const { asyncHandler } = require("../middleware/errorHandler");
 const validate = require("../middleware/validate");
@@ -179,16 +180,23 @@ router.get("/timeline/:userId",
       });
     }
     
-    const userPosts = await Post.find({ userId: currentUser._id });
-    const friendPosts = await Promise.all(
+    const userPosts = await Post.find({ userId: currentUser._id }).lean();
+    const friendPostsArr = await Promise.all(
       currentUser.followings.map((friendId) => {
-        return Post.find({ userId: friendId });
+        return Post.find({ userId: friendId }).lean();
       })
     );
-    
-    res.status(200).json(userPosts.concat(...friendPosts).sort((a, b) => {
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    }));
+
+    // Attach minimal user info to posts
+    const attachUser = async (post) => {
+      const u = await User.findById(post.userId).select('username profilePicture');
+      return { ...post, user: u ? { username: u.username, profilePicture: u.profilePicture } : null };
+    };
+
+    const flat = userPosts.concat(...friendPostsArr);
+    const withUser = await Promise.all(flat.map(attachUser));
+
+    res.status(200).json(withUser.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
   })
 );
 

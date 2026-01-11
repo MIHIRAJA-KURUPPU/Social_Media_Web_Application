@@ -1,3 +1,17 @@
 {"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 17:01:39"}
 {"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 17:01:39"}
 {"level":"info","message":"New user registered","timestamp":"2026-01-11 17:04:52","userId":"69638adc92e3c5840f1bb93d","username":"mihi1234"}
+{"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 17:38:02"}
+{"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 17:38:02"}
+{"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 17:38:26"}
+{"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 17:38:26"}
+{"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 17:39:04"}
+{"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 17:39:04"}
+{"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 17:39:30"}
+{"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 17:39:30"}
+{"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 17:40:36"}
+{"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 17:40:36"}
+{"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 17:41:50"}
+{"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 17:41:50"}
+{"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 18:22:11"}
+{"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 18:22:11"}

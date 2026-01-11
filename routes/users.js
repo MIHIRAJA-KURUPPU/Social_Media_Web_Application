@@ -11,6 +11,37 @@ const {
 } = require('../validators/userValidators');
 const { logger } = require('../utils/logger');
 
+// Get user profile details by username (includes counts)
+router.get('/username/:username',
+  asyncHandler(async (req, res) => {
+    const user = await User.findOne({ username: req.params.username });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Count posts by user
+    const Post = require('../Models/Post');
+    const postsCount = await Post.countDocuments({ userId: user._id });
+
+    const followers = user.followers || [];
+    const followings = user.followings || [];
+
+    const { password, updatedAt, resetPasswordToken, resetPasswordExpire, ...other } = user._doc;
+
+    res.status(200).json({
+      success: true,
+      user: other,
+      stats: {
+        posts: postsCount,
+        followers: followers.length,
+        following: followings.length
+      },
+      followers: followers.slice(0, 50),
+      followings: followings.slice(0, 50)
+    });
+  })
+);
+
 // Update user
 router.put('/:id',
   verifyToken,
