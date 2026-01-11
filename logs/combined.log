@@ -1,0 +1,3 @@
+{"environment":"development","level":"info","message":"Backend server is running on port 8800","port":"8800","timestamp":"2026-01-11 17:01:39"}
+{"database":"echome","level":"info","message":"Connected to MongoDB","timestamp":"2026-01-11 17:01:39"}
+{"level":"info","message":"New user registered","timestamp":"2026-01-11 17:04:52","userId":"69638adc92e3c5840f1bb93d","username":"mihi1234"}

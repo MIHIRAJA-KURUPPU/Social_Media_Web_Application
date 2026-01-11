@@ -55,6 +55,12 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     enum: [1, 2, 3] // 1 for single, 2 for married, 3 for others
   },
+  resetPasswordToken: {
+    type: String
+  },
+  resetPasswordExpire: {
+    type: Date
+  }
 }, { timestamps: true });
 
 // Create and export the User model

@@ -1,21 +1,35 @@
 const router = require('express').Router();
 const User = require('../Models/User');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const { generateToken } = require('../middleware/auth');
+const { asyncHandler } = require('../middleware/errorHandler');
+const validate = require('../middleware/validate');
+const { 
+  registerValidation, 
+  loginValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation
+} = require('../validators/authValidators');
+const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiter');
+const { logger } = require('../utils/logger');
 
 // Register User
-router.post('/register', async (req, res) => {
-  try {
-    // Check if required fields are provided
+router.post('/register', 
+  authLimiter,
+  registerValidation,
+  validate,
+  asyncHandler(async (req, res) => {
     const { username, email, password, desc, city, from, relationship } = req.body;
 
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: 'Username, email, and password are required' });
-    }
-
     // Check if the user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      logger.logWarning('Registration attempt with existing credentials', { email, username });
+      return res.status(400).json({ 
+        success: false,
+        message: existingUser.email === email ? 'Email already exists' : 'Username already exists'
+      });
     }
 
     // Generate a salt and hash the password with bcrypt
@@ -27,17 +41,25 @@ router.post('/register', async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      desc: desc || '', // Optional fields
+      desc: desc || '',
       city: city || '',
       from: from || '',
-      relationship // Optional field; will be undefined if not provided
+      relationship
     });
 
     // Save the new user to the database
     const user = await newUser.save();
-    // Send a success response with the newly created user
+    
+    // Generate JWT token
+    const token = generateToken(user);
+    
+    logger.logInfo('New user registered', { userId: user._id, username: user.username });
+    
+    // Send a success response with token
     res.status(201).json({
+      success: true,
       message: 'User registered successfully',
+      token,
       user: {
         id: user._id,
         username: user.username,
@@ -45,41 +67,52 @@ router.post('/register', async (req, res) => {
         desc: user.desc,
         city: user.city,
         from: user.from,
-        relationship: user.relationship
+        relationship: user.relationship,
+        profilePicture: user.profilePicture,
+        coverPicture: user.coverPicture
       }
     });
-  } catch (error) {
-    // Log the error and send an error response
-    console.error(error);
-    res.status(500).json({ message: 'Error creating user', error: error.message });
-  }
-});
+  })
+);
 
 // Login User
-router.post('/login', async (req, res) => {
-  try {
-    // Check if email and password are provided
+router.post('/login',
+  authLimiter,
+  loginValidation,
+  validate,
+  asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
-    }
 
     // Find the user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      logger.logWarning('Login attempt with non-existent email', { email });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Invalid email or password'
+      });
     }
 
     // Compare the provided password with the stored hashed password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(400).json({ message: 'Invalid password' });
+      logger.logWarning('Failed login attempt', { userId: user._id, email });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid email or password'
+      });
     }
 
-    // Send a success response if login is valid
+    // Generate JWT token
+    const token = generateToken(user);
+    
+    logger.logInfo('User logged in', { userId: user._id, username: user.username });
+
+    // Send a success response with token
     res.status(200).json({
+      success: true,
       message: 'Login successful',
+      token,
       user: {
         id: user._id,
         username: user.username,
@@ -87,14 +120,108 @@ router.post('/login', async (req, res) => {
         desc: user.desc,
         city: user.city,
         from: user.from,
-        relationship: user.relationship
+        relationship: user.relationship,
+        profilePicture: user.profilePicture,
+        coverPicture: user.coverPicture,
+        followers: user.followers,
+        followings: user.followings
       }
     });
-  } catch (error) {
-    // Log the error and send an error response
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
+  })
+);
+
+// Forgot Password - Request reset token
+router.post('/forgot-password',
+  passwordResetLimiter,
+  forgotPasswordValidation,
+  validate,
+  asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Don't reveal if user exists for security
+      return res.status(200).json({
+        success: true,
+        message: 'If the email exists, a password reset link has been sent'
+      });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    // Save hashed token and expiration to user
+    user.resetPasswordToken = resetTokenHash;
+    user.resetPasswordExpire = Date.now() + 30 * 60 * 1000; // 30 minutes
+    await user.save();
+
+    // In production, send email with reset token
+    // For now, we'll return it in the response (REMOVE IN PRODUCTION)
+    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
+    
+    logger.logInfo('Password reset requested', { userId: user._id, email });
+
+    // TODO: Send email with nodemailer
+    // await sendResetEmail(user.email, resetUrl);
+
+    res.status(200).json({
+      success: true,
+      message: 'If the email exists, a password reset link has been sent',
+      // Remove these in production - only for development
+      ...(process.env.NODE_ENV === 'development' && { 
+        resetToken,
+        resetUrl 
+      })
+    });
+  })
+);
+
+// Reset Password - Verify token and set new password
+router.post('/reset-password',
+  passwordResetLimiter,
+  resetPasswordValidation,
+  validate,
+  asyncHandler(async (req, res) => {
+    const { token, password } = req.body;
+
+    // Hash the provided token to compare with stored hash
+    const resetTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Find user with valid token and not expired
+    const user = await User.findOne({
+      resetPasswordToken: resetTokenHash,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      logger.logWarning('Invalid or expired reset token used');
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset token'
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    
+    // Clear reset token fields
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    logger.logInfo('Password reset successful', { userId: user._id });
+
+    // Generate new JWT token
+    const authToken = generateToken(user);
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successful',
+      token: authToken
+    });
+  })
+);
 
 module.exports = router;
